@@ -1,6 +1,6 @@
 terraform {
   backend "s3"{
-  bucket = "tf-state-124jk123"
+  bucket = ${{ secrets.BUCKET_TF_STATE }}
   key = "terrraform.tfstate"
   region = "us-east-2"
   }
