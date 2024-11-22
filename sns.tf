@@ -42,5 +42,3 @@ resource "aws_sns_topic_policy" "cloudtrail_topic_policy" {
   })
 }
 
-# Fetch Account Information
-data "aws_caller_identity" "current" {}
