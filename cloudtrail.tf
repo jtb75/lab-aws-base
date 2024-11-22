@@ -97,3 +97,6 @@ resource "aws_cloudtrail" "cloudtrail" {
     }
   }
 }
+
+# Fetch account ID dynamically
+data "aws_caller_identity" "current" {}
