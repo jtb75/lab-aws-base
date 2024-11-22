@@ -1,4 +1,4 @@
-# KMS Key for SNS Topic Encryption with Automatic Rotation
+# KMS Key for SNS Topic Encryption with CloudTrail Access
 resource "aws_kms_key" "sns_key" {
   description             = "KMS key for SNS Topic encryption"
   deletion_window_in_days = 7
@@ -20,13 +20,13 @@ resource "aws_kms_key" "sns_key" {
         Resource  = "*",
         Condition = {
           StringEquals = {
-            "kms:ViaService"      = "sns.${var.aws_region}.amazonaws.com",
-            "kms:CallerAccount"   = data.aws_caller_identity.current.account_id
+            "kms:ViaService"    = "sns.${var.aws_region}.amazonaws.com",
+            "kms:CallerAccount" = data.aws_caller_identity.current.account_id
           }
         }
       },
       {
-        Sid       = "AllowAdministrators",
+        Sid       = "AllowAccountToManageKey",
         Effect    = "Allow",
         Principal = {
           AWS = "arn:aws:iam::${data.aws_caller_identity.current.account_id}:root"
@@ -38,19 +38,20 @@ resource "aws_kms_key" "sns_key" {
   })
 }
 
-# KMS Key Alias for Management
+# KMS Key Alias for Easy Management
 resource "aws_kms_alias" "sns_key_alias" {
   name          = "alias/sns-cloudtrail-key"
   target_key_id = aws_kms_key.sns_key.id
 }
-# SNS Topic for CloudTrail with Server-Side Encryption
+
+# SNS Topic for CloudTrail
 resource "aws_sns_topic" "cloudtrail_topic" {
   name = "cloudtrail-topic"
 
   kms_master_key_id = aws_kms_key.sns_key.arn
 }
 
-# Allow CloudTrail to publish to the SNS Topic
+# SNS Topic Policy to Allow CloudTrail Publishing
 resource "aws_sns_topic_policy" "cloudtrail_topic_policy" {
   arn = aws_sns_topic.cloudtrail_topic.arn
 
@@ -58,12 +59,13 @@ resource "aws_sns_topic_policy" "cloudtrail_topic_policy" {
     Version = "2012-10-17",
     Statement = [
       {
-        Effect = "Allow",
+        Sid       = "AllowCloudTrailPublishing",
+        Effect    = "Allow",
         Principal = {
           Service = "cloudtrail.amazonaws.com"
         },
-        Action   = "sns:Publish",
-        Resource = aws_sns_topic.cloudtrail_topic.arn,
+        Action    = "sns:Publish",
+        Resource  = aws_sns_topic.cloudtrail_topic.arn,
         Condition = {
           StringEquals = {
             "aws:SourceAccount" = data.aws_caller_identity.current.account_id
@@ -73,4 +75,3 @@ resource "aws_sns_topic_policy" "cloudtrail_topic_policy" {
     ]
   })
 }
-
