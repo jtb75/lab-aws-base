@@ -98,9 +98,6 @@ resource "aws_cloudtrail" "cloudtrail" {
   }
 }
 
-# Fetch account ID dynamically
-data "aws_caller_identity" "current" {}
-
 # SNS Topic for CloudTrail
 resource "aws_sns_topic" "cloudtrail_topic" {
   name = "cloudtrail-topic"
@@ -130,25 +127,27 @@ resource "aws_sns_topic_policy" "cloudtrail_topic_policy" {
   })
 }
 
-# Add the SNS topic to CloudTrail
+# CloudTrail Configuration
 resource "aws_cloudtrail" "cloudtrail" {
   name                          = "management-events-trail"
   s3_bucket_name                = aws_s3_bucket.cloudtrail_bucket.id
-  sns_topic_arn                 = aws_sns_topic.cloudtrail_topic.arn
   include_global_service_events = true
   is_multi_region_trail         = true
   enable_logging                = true
 
+  # Optional: SNS topic configuration (must be applied separately in Terraform v4+)
   event_selector {
     read_write_type           = "WriteOnly"
     include_management_events = true
 
     data_resource {
       type   = "AWS::S3::Object"
-      values = ["arn:aws:s3:::${aws_s3_bucket.cloudtrail_bucket.bucket}"]
+      values = ["arn:aws:s3:::${aws_s3_bucket.cloudtrail_bucket.bucket}/"]
     }
   }
+
+  depends_on = [aws_sns_topic_policy.cloudtrail_topic_policy]
 }
 
-# Fetch account ID dynamically
+# Fetch Account Information
 data "aws_caller_identity" "current" {}
