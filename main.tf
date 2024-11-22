@@ -1,7 +1,9 @@
-resource "aws_s3_bucket" "forgithubaction" {
-  bucket = "forghaction123fa"
-  tags = {
-    Name = "Prod"
-    Customer = "useless"
+terraform {
+  required_version = ">1.0"
+  required_providers {
+    aws = {
+      source  = "hashicorp/aws"
+      version = "5.22.0"
+    }
   }
 }
