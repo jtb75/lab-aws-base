@@ -1,5 +1,4 @@
 # CloudTrail Configuration
-/*
 resource "aws_cloudtrail" "cloudtrail" {
   name                          = "management-events-trail"
   s3_bucket_name                = aws_s3_bucket.cloudtrail_bucket.id
@@ -20,5 +19,3 @@ resource "aws_cloudtrail" "cloudtrail" {
 
   depends_on = [aws_sns_topic_policy.cloudtrail_topic_policy]
 }
-
-*/
