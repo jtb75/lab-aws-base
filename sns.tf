@@ -7,6 +7,7 @@ resource "aws_kms_key" "sns_key" {
   policy = jsonencode({
     Version = "2012-10-17",
     Statement = [
+      # Allow CloudTrail to use the key
       {
         Sid       = "AllowCloudTrailToUseKey",
         Effect    = "Allow",
@@ -14,19 +15,19 @@ resource "aws_kms_key" "sns_key" {
           Service = "cloudtrail.amazonaws.com"
         },
         Action    = [
-          "kms:GenerateDataKey",
+          "kms:GenerateDataKey*",
           "kms:Decrypt"
         ],
         Resource  = "*",
         Condition = {
           StringEquals = {
-            "kms:ViaService"    = "sns.${var.aws_region}.amazonaws.com",
-            "kms:CallerAccount" = data.aws_caller_identity.current.account_id
+            "kms:ViaService" = "sns.${var.aws_region}.amazonaws.com"
           }
         }
       },
+      # Allow the account root user full access
       {
-        Sid       = "AllowAccountToManageKey",
+        Sid       = "EnableRootAccountAccess",
         Effect    = "Allow",
         Principal = {
           AWS = "arn:aws:iam::${data.aws_caller_identity.current.account_id}:root"
@@ -38,7 +39,6 @@ resource "aws_kms_key" "sns_key" {
   })
 }
 
-# KMS Key Alias for Easy Management
 resource "aws_kms_alias" "sns_key_alias" {
   name          = "alias/sns-cloudtrail-key"
   target_key_id = aws_kms_key.sns_key.id
