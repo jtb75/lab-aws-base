@@ -6,7 +6,3 @@ module "wiz" {
   eks-scanning       = true
   remote-arn         = "arn:aws:iam::197171649850:role/prod-us20-AssumeRoleDelegator"
 }
-
-output "wiz_connector_arn" {
-  value = module.wiz.role_arn
-}
