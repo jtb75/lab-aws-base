@@ -41,6 +41,7 @@ resource "aws_s3_bucket_versioning" "versioning" {
 resource "random_string" "random_suffix" {
   length  = 8
   special = false
+  upper   = false
 }
 
 # S3 Bucket Policy for CloudTrail
