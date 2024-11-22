@@ -1,4 +1,5 @@
 # CloudTrail Configuration
+/*
 resource "aws_cloudtrail" "cloudtrail" {
   name                          = "management-events-trail"
   s3_bucket_name                = aws_s3_bucket.cloudtrail_bucket.id
@@ -22,3 +23,4 @@ resource "aws_cloudtrail" "cloudtrail" {
 
 # Fetch Account Information
 data "aws_caller_identity" "current" {}
+*/
