@@ -3,6 +3,39 @@ resource "aws_kms_key" "sns_key" {
   description             = "KMS key for SNS Topic encryption"
   deletion_window_in_days = 7
   enable_key_rotation     = true
+
+  policy = jsonencode({
+    Version = "2012-10-17",
+    Statement = [
+      {
+        Sid       = "AllowCloudTrailToUseKey",
+        Effect    = "Allow",
+        Principal = {
+          Service = "cloudtrail.amazonaws.com"
+        },
+        Action    = [
+          "kms:GenerateDataKey",
+          "kms:Decrypt"
+        ],
+        Resource  = "*",
+        Condition = {
+          StringEquals = {
+            "kms:ViaService"      = "sns.${var.aws_region}.amazonaws.com",
+            "kms:CallerAccount"   = data.aws_caller_identity.current.account_id
+          }
+        }
+      },
+      {
+        Sid       = "AllowAdministrators",
+        Effect    = "Allow",
+        Principal = {
+          AWS = "arn:aws:iam::${data.aws_caller_identity.current.account_id}:root"
+        },
+        Action    = "kms:*",
+        Resource  = "*"
+      }
+    ]
+  })
 }
 
 # KMS Key Alias for Management
@@ -10,7 +43,6 @@ resource "aws_kms_alias" "sns_key_alias" {
   name          = "alias/sns-cloudtrail-key"
   target_key_id = aws_kms_key.sns_key.id
 }
-
 # SNS Topic for CloudTrail with Server-Side Encryption
 resource "aws_sns_topic" "cloudtrail_topic" {
   name = "cloudtrail-topic"
