@@ -1,6 +1,6 @@
 # S3 Bucket for CloudTrail logs
 resource "aws_s3_bucket" "cloudtrail_bucket" {
-  bucket = "cloudtrail-bucket-${random_suffix.result}"
+  bucket = "cloudtrail-bucket-${random_string.random_suffix.result}"
 
   tags = {
     Name        = "CloudTrail S3 Bucket"
@@ -12,9 +12,9 @@ resource "aws_s3_bucket" "cloudtrail_bucket" {
 resource "aws_s3_bucket_public_access_block" "block_public_access" {
   bucket = aws_s3_bucket.cloudtrail_bucket.id
 
-  block_public_acls   = true
-  block_public_policy = true
-  ignore_public_acls  = true
+  block_public_acls       = true
+  block_public_policy     = true
+  ignore_public_acls      = true
   restrict_public_buckets = true
 }
 
@@ -51,22 +51,22 @@ resource "aws_s3_bucket_policy" "cloudtrail_bucket_policy" {
     Version = "2012-10-17"
     Statement = [
       {
-        Sid       = "AWSCloudTrailAclCheck"
-        Effect    = "Allow"
+        Sid    = "AWSCloudTrailAclCheck"
+        Effect = "Allow"
         Principal = {
           Service = "cloudtrail.amazonaws.com"
         }
-        Action    = "s3:GetBucketAcl"
-        Resource  = "arn:aws:s3:::${aws_s3_bucket.cloudtrail_bucket.id}"
+        Action   = "s3:GetBucketAcl"
+        Resource = "arn:aws:s3:::${aws_s3_bucket.cloudtrail_bucket.id}"
       },
       {
-        Sid       = "AWSCloudTrailWrite"
-        Effect    = "Allow"
+        Sid    = "AWSCloudTrailWrite"
+        Effect = "Allow"
         Principal = {
           Service = "cloudtrail.amazonaws.com"
         }
-        Action    = "s3:PutObject"
-        Resource  = "arn:aws:s3:::${aws_s3_bucket.cloudtrail_bucket.id}/AWSLogs/*"
+        Action   = "s3:PutObject"
+        Resource = "arn:aws:s3:::${aws_s3_bucket.cloudtrail_bucket.id}/AWSLogs/*"
         Condition = {
           StringEquals = {
             "s3:x-amz-acl" = "bucket-owner-full-control"
@@ -89,10 +89,10 @@ resource "aws_cloudtrail" "cloudtrail" {
     read_write_type           = "WriteOnly"
     include_management_events = true
 
-    # Optional: To include/exclude specific data resources
+    # Log data events for the CloudTrail bucket itself
     data_resource {
       type   = "AWS::S3::Object"
-      values = ["arn:aws:s3:::example-bucket/"] # Adjust as needed
+      values = ["arn:aws:s3:::${aws_s3_bucket.cloudtrail_bucket.bucket}"]
     }
   }
 }
