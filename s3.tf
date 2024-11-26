@@ -83,6 +83,21 @@ resource "aws_s3_bucket_policy" "cloudtrail_bucket_policy" {
             "s3:x-amz-acl" = "bucket-owner-full-control"
           }
         }
+      },
+      {
+        Sid    = "DenyHTTPRequests",
+        Effect = "Deny",
+        Principal = "*",
+        Action = "s3:*",
+        Resource = [
+          "arn:aws:s3:::${aws_s3_bucket.cloudtrail_bucket.bucket}",
+          "arn:aws:s3:::${aws_s3_bucket.cloudtrail_bucket.bucket}/*"
+        ],
+        Condition = {
+          Bool = {
+            "aws:SecureTransport" = false
+          }
+        }
       }
     ]
   })
